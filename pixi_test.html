@@ -4,43 +4,41 @@
     <script src='pixi.min.js'></script>
     <script src='pixi-library.js'></script>
     <script src='camera.js'></script>
+    <style>
+        canvas {
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            position: absolute;
+            top: 0px;
+        }
+    </style>
 </head>
 
 <body>
+    <canvas id='c1' width='640' height='480' style='opacity:0.3'></canvas>
+    <canvas id='c2' width='640' height='480'></canvas>
     <script>
-        function createCanvas(id) {
-            var c1 = document.createElement('canvas');
-            c1.id = id;
-            c1.width = 640;
-            c1.height = 480;
-            c1.style['margin-left'] = 'auto';
-            c1.style['margin-right'] = 'auto';
-            c1.style['display'] = 'block';
-            c1.style.opacity = 0.3;
-            document.body.appendChild(c1);
-            return c1;
-        }
-
         ((async function () {
-            var cam = new Camera(0).setFlip(true).setCanvas(createCanvas('c1'));
+            var cam = new Camera(0).setFlip(true).setCanvas(c1);
             await cam.start();
             main();
         }))();
-
-
+        var act, act2;
         async function main() {
             //產生遊戲平台
-            var game1 = new PIXI_Game();
+            var game1 = new PIXI_Game(c2);
             //name, game, key, width, height
-            var a1 = new PIXI_Monster('格林', 'media/demo-edu-a1.png', 0, 0, 200, 200);
-
-            var game = new PIXI_Game([
-                { "name": "a1", "url": "media/demo-edu-a1.png" },
-                { "name": "a2", "url": "media/demo-edu-a2.png" },
-                { "name": "a3", "url": "media/demo-edu-a3.png" },
-                { "name": "a4", "url": "media/demo-edu-a4.png" }
-            ]);
-            console.log("OKOKOK");
+            act = await new PIXI_Monster(game1, '格林', 'res/a1.png', 0, 0, 200, 200);
+            act.size(40, 40);
+            act.pos(100, 100);
+            act.moveTo(110, 110);
+            act.moveTo(100, 100);
+            //act.moveTo(0, 0);
+            //此角色的執行緒
+            act.run(function () {
+               
+            });
         }
 
     </script>

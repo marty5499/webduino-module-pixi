@@ -1,5 +1,5 @@
 class PIXI_Game {
-    constructor(cbSetup, res, canvas) {
+    constructor(canvas) {
         this.actors = {};
         this.app = new PIXI.Application({
             width: canvas.width,
@@ -11,19 +11,8 @@ class PIXI_Game {
         }
         );
         this.loader = PIXI.loader;
-        this.loader.add(res).load(cbSetup);
         this.app.ticker.add(delta => this.gameLoop(delta));
     }
-
-    async start(cb) {
-        var self = this;
-        return new Promise((resolve, reject) => {
-          self.onCanvas(function () {
-            self.onCanvasCallbackList.pop();
-            resolve("ready2go");
-          });
-        });
-      }    
 
     join(actor) {
         this.actors[actor.name] = actor;
@@ -32,7 +21,7 @@ class PIXI_Game {
     gameLoop(delta) {
         for (var key in this.actors) {
             var actor = this.actors[key];
-            actor.run();
+            actor.exec();
             actor.isCollision = false;
             for (var key2 in this.actors) {
                 var actor2 = this.actors[key2];
@@ -95,26 +84,37 @@ class PIXI_Game {
 
 
 class PIXI_Monster {
-    constructor(name, game, key, width, height) {
-        this.name = name;
-        let texture = PIXI.TextureCache[key];
-        texture.frame = new PIXI.Rectangle(0, 0/*type*/, 200, 200);
-        this.sprite = new PIXI.Sprite(texture);
-        this.game = game;
-        this.type(0);
-        var sprite = this.sprite;
-        sprite.width = 50;
-        sprite.height = 50;
-        sprite.anchor.x = 0.5;
-        sprite.anchor.y = 0.5;
-        sprite.rotation = 0;
-        sprite.interactive = true;
-        sprite.cursor = 'normal';
-        sprite.on('click', (event) => {
-            console.log("tap");
+    constructor(game, name, url, imgX, imgY, width, height) {
+        var self = this;
+        return new Promise(async (resolve, reject) => {
+            try {
+                self.game = game;
+                self.name = name;
+                self.imgURL = url;
+                self.imgX = imgX;
+                self.imgY = imgY;
+                self.width = width;
+                self.height = height;
+                self.actMoveTo = [];
+                self.cbCollision = function (actor) { };
+                self.callback = function (sprite) { };
+                await self.join();
+                //self.sprite.visible = false;
+            } catch (ex) {
+                return reject(ex);
+            }
+            resolve(this);
         });
-        this.cbCollision = function (actor) { };
-        this.callback = function (sprite) { };
+    }
+
+    show() {
+        this.sprite.visible = true;
+        return this;
+    }
+
+    hide() {
+        this.sprite.visible = false;
+        return this;
     }
 
     collision(cb) {
@@ -136,16 +136,49 @@ class PIXI_Monster {
             case 3:
                 mType = 800;
                 break;
-
         }
         this.sprite.texture.frame = new PIXI.Rectangle(0, mType, 200, 200);
         return this;
     }
 
-    join() {
-        this.game.app.stage.addChild(this.sprite);
-        this.game.join(this);
+    size(width, height) {
+        this.sprite.width = width;
+        this.sprite.height = height;
         return this;
+    }
+
+    async join() {
+        var self = this;
+        function createSprite() {
+            var texture = PIXI.utils.TextureCache[self.imgURL];
+            texture.frame = new PIXI.Rectangle(0, 0, self.imgX, self.imgY, self.width, self.height);
+            self.sprite = new PIXI.Sprite(texture);
+            self.type(0);
+            var sprite = self.sprite;
+            sprite.anchor.x = 0.5;
+            sprite.anchor.y = 0.5;
+            sprite.rotation = 0;
+            sprite.interactive = true;
+            sprite.cursor = 'normal';
+            sprite.on('click', (event) => {
+                console.log("tap");
+            });
+            self.game.join(self);
+            self.game.app.stage.addChild(self.sprite);
+        }
+
+        return new Promise((resolve, reject) => {
+            var texture = PIXI.TextureCache[self.imgURL];
+            if (typeof texture == 'undefined') {
+                PIXI.loader.add(self.imgURL).load(function () {
+                    createSprite();
+                    resolve(self);
+                });
+            } else {
+                createSprite();
+                resolve(self);
+            }
+        });
     }
 
     pos(x, y) {
@@ -153,9 +186,26 @@ class PIXI_Monster {
         this.sprite.y = y;
         return this;
     }
+
     start(cb) {
         this.callback = cb;
         return this;
+    }
+
+    moveTo(desX, desY) {
+        this.actMoveTo.push([desX, desY, stepX * xSign, 1 * ySign]);
+        var xDistance = desX - this.sprite.x;
+        var yDistance = desY - this.sprite.y;
+        var stepX = xDistance == 0 ? 0 : Math.abs(xDistance / yDistance);
+        var stepY = yDistance == 0 ? 0 : Math.abs(yDistance / xDistance);
+        var xSign = xDistance > 0 ? 1 : -1;
+        var ySign = yDistance > 0 ? 1 : -1;
+
+        if (stepX > stepY) {
+            this.actMoveTo.push([desX, desY, stepX * xSign, 1 * ySign]);
+        } else {
+            this.actMoveTo.push([desX, desY, 1 * xSign, stepY * ySign]);
+        }
     }
 
     rotate(rotate, anchorX, anchorY) {
@@ -168,8 +218,28 @@ class PIXI_Monster {
         return this;
     }
 
-    run() {
+    exec() {
+        if (this.actMoveTo.length > 0) {
+            var actInfo = this.actMoveTo[0];
+            //console.log("actInfo:", actInfo);
+            var desX = actInfo[0];
+            var desY = actInfo[1];
+            var stepX = actInfo[2];
+            var stepY = actInfo[3];
+            this.sprite.x += stepX;
+            this.sprite.y += stepY;
+            console.log("exec:", parseInt(this.sprite.x), parseInt(this.sprite.y), ' ==> ', desX, desY, '(', stepX, stepY);
+            if (desX == parseInt(this.sprite.x) && desY == parseInt(this.sprite.y)) {
+                this.actMoveTo.shift();
+            }
+        }
         this.callback(this.sprite);
+        return this;
+    }
+
+    run(cb) {
+        this.callback = cb;
+        return this;
     }
 
 }
