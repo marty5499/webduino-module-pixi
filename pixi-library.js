@@ -182,8 +182,8 @@ class PIXI_Monster {
     }
 
     pos(x, y) {
-        this.sprite.x = x;
-        this.sprite.y = y;
+        this.x = this.sprite.x = x;
+        this.y = this.sprite.y = y;
         return this;
     }
 
@@ -193,19 +193,7 @@ class PIXI_Monster {
     }
 
     moveTo(desX, desY) {
-        this.actMoveTo.push([desX, desY, stepX * xSign, 1 * ySign]);
-        var xDistance = desX - this.sprite.x;
-        var yDistance = desY - this.sprite.y;
-        var stepX = xDistance == 0 ? 0 : Math.abs(xDistance / yDistance);
-        var stepY = yDistance == 0 ? 0 : Math.abs(yDistance / xDistance);
-        var xSign = xDistance > 0 ? 1 : -1;
-        var ySign = yDistance > 0 ? 1 : -1;
-
-        if (stepX > stepY) {
-            this.actMoveTo.push([desX, desY, stepX * xSign, 1 * ySign]);
-        } else {
-            this.actMoveTo.push([desX, desY, 1 * xSign, stepY * ySign]);
-        }
+        this.actMoveTo.push([desX, desY]);
     }
 
     rotate(rotate, anchorX, anchorY) {
@@ -218,20 +206,44 @@ class PIXI_Monster {
         return this;
     }
 
+    processMoveTo() {
+        var actInfo = this.actMoveTo[0];
+        var desX = actInfo[0];
+        var desY = actInfo[1];
+        var stepX = 0;
+        var stepY = 0;
+        if (Math.abs(desX - this.x) < 1) {
+            this.x = desX;
+        }
+        if (Math.abs(desY - this.y) < 1) {
+            this.y = desY;
+        }
+        var xDistance = desX - this.x;
+        var yDistance = desY - this.y;
+        var stepX = xDistance == 0 ? 0 : Math.abs(xDistance / yDistance);
+        var stepY = yDistance == 0 ? 0 : Math.abs(yDistance / xDistance);
+        var xSign = xDistance > 0 ? 1 : -1;
+        var ySign = yDistance > 0 ? 1 : -1;
+        var speed = 1;
+        if (stepX > stepY) {
+            this.x += (xSign * speed);
+            this.y += (ySign * stepY * speed);
+        } else {
+            this.x += (xSign * stepX * speed);
+            this.y += (ySign * speed);
+        }
+        if (Math.abs(this.x - this.sprite.x) > 1 || Math.abs(this.y - this.sprite.y) > 1) {
+            this.sprite.x = this.x;
+            this.sprite.y = this.y;
+        }
+        if (desX == parseInt(this.x) && desY == parseInt(this.y)) {
+            this.actMoveTo.shift();
+        }
+    }
+
     exec() {
         if (this.actMoveTo.length > 0) {
-            var actInfo = this.actMoveTo[0];
-            //console.log("actInfo:", actInfo);
-            var desX = actInfo[0];
-            var desY = actInfo[1];
-            var stepX = actInfo[2];
-            var stepY = actInfo[3];
-            this.sprite.x += stepX;
-            this.sprite.y += stepY;
-            console.log("exec:", parseInt(this.sprite.x), parseInt(this.sprite.y), ' ==> ', desX, desY, '(', stepX, stepY);
-            if (desX == parseInt(this.sprite.x) && desY == parseInt(this.sprite.y)) {
-                this.actMoveTo.shift();
-            }
+            this.processMoveTo();
         }
         this.callback(this.sprite);
         return this;

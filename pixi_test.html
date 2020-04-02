@@ -32,12 +32,15 @@
             act = await new PIXI_Monster(game1, '格林', 'res/a1.png', 0, 0, 200, 200);
             act.size(40, 40);
             act.pos(100, 100);
-            act.moveTo(110, 110);
-            act.moveTo(100, 100);
+            for (var i = 0; i < 21; i++) {
+                var x = parseInt(Math.random() * 640);
+                var y = parseInt(Math.random() * 480);
+                act.moveTo(x, y);
+            }
             //act.moveTo(0, 0);
             //此角色的執行緒
             act.run(function () {
-               
+
             });
         }
 
