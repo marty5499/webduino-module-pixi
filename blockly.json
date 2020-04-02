@@ -1,0 +1,31 @@
+{
+  "types": [
+    "waspot_get_camera",
+    "waspot_create_actor",
+    "waspot_move_actor",
+    "waspot_show_actor",
+    "waspot_play_audio_actor",
+    "waspot_touch_actor",
+    "waspot_get_canvas"
+  ],
+  "category": "catPlus",
+  "scripts": [
+    "blockly/blocks.js",
+    "blockly/javascript.js"
+  ],
+  "dependencies": [
+    "adapter.js",
+    "webRTC.js",
+    "camera.js",
+    "opencv.js",
+    "imageFilter.js",
+    "actor.js",
+    "HotSpot.js",
+    "pixi.min.js",
+    "pixi-library.js",
+    "pixi-blockly.js"
+  ],
+  "msg": "blockly/msg",
+  "blocksMsg": "blockly/msg/blocks",
+  "toolbox": "blockly/toolbox.xml"
+}

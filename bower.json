@@ -1,0 +1,19 @@
+{
+  "name": "webduino-module-videoSensor",
+  "description": "videoSensor Module for Webduino",
+  "main": "actor.js",
+  "authors": "",
+  "license": "MIT",
+  "keywords": [
+    "arduino",
+    "webduino",
+    "actor"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

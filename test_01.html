@@ -1,0 +1,298 @@
+<!doctype html>
+<!--
+Created using JS Bin
+http://bin.webduino.io
+
+Copyright (c) 2020 by anonymous (http://bin.webduino.io/fite/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Webduino Blockly Demo 01</title>
+  <script src="https://blocklypro.webduino.io/node_modules/jquery/dist/jquery.min.js?rev=2f6b11a7e914718e0290410e85366fe9"></script>
+  <script src="https://blocklypro.webduino.io/dist/lib/webduino-all-0.4.20.min.js?rev=4426739c00d85325cb2d3d701fa50666"></script>
+  <script src="https://blocklypro.webduino.io/dist/webduino-blockly.min.js?rev=ad06da24174defd84a3752446fc7b672"></script>
+  <script src="https://blocklypro.webduino.io/dist/lib/firebase.min.js?rev=c0bfd493efd477d098a4ae9e92b13880"></script>
+  <script src="https://blocklypro.webduino.io/dist/lib/runtime.min.js?rev=683a69503433786202911b4d9f766100"></script>
+  <script src="https://webduinoio.github.io/webduino-module-videoSensor/adapter.js"></script>
+  <script src="https://webduinoio.github.io/webduino-module-videoSensor/webRTC.js"></script>
+  <script src="https://webduinoio.github.io/webduino-module-videoSensor/camera.js"></script>
+  <script src="https://webduinoio.github.io/webduino-module-videoSensor/opencv.js"></script>
+  <script src="https://webduinoio.github.io/webduino-module-videoSensor/imageFilter.js"></script>
+  <script src="actor.js"></script>
+  <script src="HotSpot.js"></script>
+  <script src="https://webduinoio.github.io/webduino-module-videoSensor/waspot-blockly.js"></script>
+  <style id="jsbin-css">
+  #demo-area-01-show {
+    font-size: 60px;
+    pointer-events: auto !important;
+  }
+  </style>
+</head>
+
+<body>
+  <h1><br><br><br></h1>
+  <div></div>
+  <script id="jsbin-javascript">
+  /**
+   * kebbi iot 小遊戲，火箭升空 + 隕石 + 視訊偵測
+   * 重構 file-1.js
+   */
+
+  (async function () {
+    const WIDTH = 640;
+    const HEIGHT = 480;
+
+    function delay(ss) {
+      let ms = ss * 1000;
+      return new Promise(resolve => {
+        setTimeout(resolve, ms);
+      });
+    }
+
+    class Stone {
+      constructor(option) {
+        this.option = Object.assign(this.defaultOption(), option);
+        this.isStopMoving = false;
+
+        let { camera, img, width, height } = this.option;
+        this.actor = new Actor(cv, {
+          stage: camera,
+          img: img,
+          pos: [0, 0, width, height]
+        });
+        this.actor.start();
+        this.startMove();
+      }
+
+      defaultOption() {
+        return {
+          camera: null,
+          img: null,
+          width: 64,
+          height: 64,
+          rocket: null,
+        };
+      }
+
+      async startMove() {
+        this.isStopMoving = false;
+        while (!this.isStopMoving) {
+          await this.moving();
+          await delay(1);
+        }
+      }
+
+      stopMove() {
+        this.isStopMoving = true;
+      }
+
+      async moving() {
+        let actor = this.actor;
+        let { startLoc, endLoc } = this.getLocations();
+        let mvX = startLoc.x;
+        let mvY = startLoc.y;
+        let stepValue = this.getStepDirection(startLoc, endLoc);
+        let isWaitTochange = false;
+        let isExplosion = false;
+
+        actor.moveTo(startLoc.x, startLoc.y);
+        await delay(1);
+
+        while (((stepValue.x > 0 && mvX < endLoc.x - 10) || (stepValue.x <= -10 && mvX > endLoc.x)) && !this.isStopMoving && !isExplosion) {
+          mvX = mvX + stepValue.x;
+          mvY = mvY + stepValue.y;
+          actor.moveTo(mvX, mvY);
+          // if (this.isCollide() && !isWaitTochange) {
+          //   await this.explosing();
+          //   isWaitTochange = true;
+          // } else {
+          //   isWaitTochange = false;
+          // }
+          // if (this.isCollide()) {
+          //   await this.explosing();
+          //   isExplosion = true;
+          // }
+          await delay(1);
+        }
+      }
+
+      getLocations() {
+        let { camera, width, height } = this.option;
+        let cameraWidth = camera.getCanvas().offsetWidth;
+        let cameraHeight = camera.getCanvas().offsetHeight;
+        let startLoc = {
+          y: Math.round(cameraHeight * Math.random()) - height / 2,
+        };
+        let endLoc = {
+          y: Math.round(cameraHeight * Math.random()) - height / 2,
+        };
+        if (Math.random() > 0.5) { // 起始位置在右邊
+          startLoc.x = cameraWidth - width / 2;
+          endLoc.x = -width / 2;
+        } else { // 起始位置在左邊
+          startLoc.x = -width / 2;
+          endLoc.x = cameraWidth - width / 2;
+        }
+        return { startLoc, endLoc };
+      }
+
+      getStepDirection(from, to) {
+        let steps = this.getSteps();
+        let stepX = Math.round((to.x - from.x) / steps);
+        let stepY = Math.round((to.y - from.y) / steps);
+        return {
+          x: stepX,
+          y: stepY,
+        };
+      }
+
+      getSteps() {
+        let rand = Math.random() * 10;
+        let step = Math.round(rand) + 1;
+        step = Math.max(step, 5);
+        step = Math.min(step, 10);
+        return step + 3;
+      }
+
+      isCollide() {
+        let actorA = this.actor;
+        let actorB = this.option.rocket;
+        let max = Math.max;
+        let min = Math.min;
+        let rectA = actorA.img.getBoundingClientRect();
+        let rectB = actorB.img.getBoundingClientRect();
+        let locA = {
+          TL: { x: rectA.x, y: rectA.y },
+          TR: { x: rectA.x + rectA.width, y: rectA.y },
+          BL: { x: rectA.x, y: rectA.y + rectA.height },
+          BR: { x: rectA.x + rectA.width, y: rectA.y + rectA.height }
+        };
+        let locB = {
+          TL: { x: rectB.x, y: rectB.y },
+          TR: { x: rectB.x + rectB.width, y: rectB.y },
+          BL: { x: rectB.x, y: rectB.y + rectB.height },
+          BR: { x: rectB.x + rectB.width, y: rectB.y + rectB.height },
+        };
+        let area = {
+          TL: { x: min(locA.TL.x, locB.TL.x), y: min(locA.TL.y, locB.TL.y) },
+          TR: { x: max(locA.TR.x, locB.TR.x), y: min(locA.TR.y, locB.TR.y) },
+          BL: { x: min(locA.BL.x, locB.BL.x), y: max(locA.BL.y, locB.BL.y) },
+          BR: { x: max(locA.BR.x, locB.BR.x), y: max(locA.BR.y, locB.BR.y) },
+        };
+
+        area.width = area.BR.x - area.TL.x;
+        area.height = area.BR.y - area.TL.y;
+
+        // 如果 area 的區域，寬及高同時小於 A, B 的和，表示有重疊
+        if (area.width < rectA.width + rectB.width && area.height < rectA.height + rectB.height) {
+          return true;
+        }
+
+        return false;
+      }
+
+      explosion() {
+        this.actor.setImg("https://media.giphy.com/media/peAFQfg7Ol6IE/giphy.gif");
+        this.actor.setImgSize(64, 64);
+      }
+
+      explosionTemp() {
+        this.actor.switchImg("https://media.giphy.com/media/peAFQfg7Ol6IE/giphy.gif");
+        this.actor.setImgSize(64, 64);
+      }
+
+      async explosing() {
+        this.stopMove();
+        this.explosion();
+        await delay(1);
+        this.hide();
+        await delay(1);
+        this.startMove();
+        this.recover();
+      }
+
+      recover() {
+        this.actor.setImg(this.option.img);
+        this.actor.setImgSize(64, 64);
+      }
+
+      onTouch(func) {
+        this.actor.onTouch(func);
+      }
+
+      hide() {
+        this.actor.hide();
+      }
+    }
+
+
+
+    class Rocket {
+      constructor(option) {
+        this.option = Object.assign(this.defaultOption(), option);
+        this.isStopMoving = false;
+        let { camera, img, width, height } = this.option;
+        this.actor = new Actor(cv, {
+          stage: camera,
+          img: img,
+          pos: [0, 0, width, height]
+        });
+        this.actor.onTouchCallback = function () {
+          console.log(i, " touch...");
+        }
+        this.actor.start();
+        this.startMove();
+      }
+
+      defaultOption() {
+        return {
+          camera: null,
+          img: null,
+          width: 32,
+          height: 32,
+          x: 0
+        };
+      }
+
+      async startMove() {
+        var actor = this.actor;
+        var x = this.option.x;
+        var hh = 0;
+        setInterval(function () {
+          actor.moveTo(x, hh);
+          hh = (hh + 10) % 460;
+        }, 20);
+      }
+    }
+
+
+    let camera = createCamera("0", WIDTH, HEIGHT, 0, true);
+    let rockets = [];
+    //*
+    for (var i = 0; i < 640; i = i + 40) {
+      var rocket = new Rocket({
+        camera: camera,
+        img: "https://i.ya-webdesign.com/images/rock-sprite-png-13.gif",
+        x: i + 1
+      });
+      rockets.push(rocket);
+    }
+    //*
+    for (var i = 0; i < 640; i = i + 40) {
+      var rocket = new Rocket({
+        camera: camera,
+        img: "https://i.ya-webdesign.com/images/rock-sprite-png-13.gif",
+        x: i + 16
+      });
+      rockets.push(rocket);
+    }
+    //*/
+  })();
+  </script>
+</body>

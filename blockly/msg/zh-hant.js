@@ -1,0 +1,1 @@
+MSG.catVideoSensor = "影像互動";
