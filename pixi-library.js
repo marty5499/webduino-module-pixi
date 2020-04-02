@@ -90,7 +90,7 @@ class PIXI_Monster {
             try {
                 self.game = game;
                 self.name = name;
-                self.imgURL = url;
+                self.imgURL = url + '#' + name;
                 self.imgX = imgX;
                 self.imgY = imgY;
                 self.width = width;
@@ -137,7 +137,7 @@ class PIXI_Monster {
                 mType = 800;
                 break;
         }
-        this.sprite.texture.frame = new PIXI.Rectangle(0, mType, 200, 200);
+        this.sprite.texture.frame = new PIXI.Rectangle(0, mType, this.width, this.height);
         return this;
     }
 
@@ -151,9 +151,8 @@ class PIXI_Monster {
         var self = this;
         function createSprite() {
             var texture = PIXI.utils.TextureCache[self.imgURL];
-            texture.frame = new PIXI.Rectangle(0, 0, self.imgX, self.imgY, self.width, self.height);
+            texture.frame = new PIXI.Rectangle(0, 0, self.width, self.height);
             self.sprite = new PIXI.Sprite(texture);
-            self.type(0);
             var sprite = self.sprite;
             sprite.anchor.x = 0.5;
             sprite.anchor.y = 0.5;
@@ -192,8 +191,8 @@ class PIXI_Monster {
         return this;
     }
 
-    moveTo(desX, desY) {
-        this.actMoveTo.push([desX, desY]);
+    moveTo(desX, desY, speed) {
+        this.actMoveTo.push([desX, desY, speed]);
     }
 
     rotate(rotate, anchorX, anchorY) {
@@ -210,6 +209,7 @@ class PIXI_Monster {
         var actInfo = this.actMoveTo[0];
         var desX = actInfo[0];
         var desY = actInfo[1];
+        var speed = actInfo[2];
         var stepX = 0;
         var stepY = 0;
         if (Math.abs(desX - this.x) < 1) {
@@ -224,13 +224,22 @@ class PIXI_Monster {
         var stepY = yDistance == 0 ? 0 : Math.abs(yDistance / xDistance);
         var xSign = xDistance > 0 ? 1 : -1;
         var ySign = yDistance > 0 ? 1 : -1;
-        var speed = 1;
         if (stepX > stepY) {
-            this.x += (xSign * speed);
-            this.y += (ySign * stepY * speed);
+            var newX = this.x + xSign * speed;
+            var newY = this.y + ySign * stepY * speed;
         } else {
-            this.x += (xSign * stepX * speed);
-            this.y += (ySign * speed);
+            var newX = this.x + xSign * stepX * speed;
+            var newY = this.y + ySign * speed;
+        }
+        if (xSign > 0) {
+            this.x = newX > desX ? desX : newX;
+        } else {
+            this.x = newX < desX ? desX : newX;
+        }
+        if (ySign > 0) {
+            this.y = newY > desY ? desY : newY;
+        } else {
+            this.y = newY < desY ? desY : newY;
         }
         if (Math.abs(this.x - this.sprite.x) > 1 || Math.abs(this.y - this.sprite.y) > 1) {
             this.sprite.x = this.x;
