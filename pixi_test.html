@@ -4,58 +4,37 @@
     <script src='pixi.min.js'></script>
     <script src='pixi-library.js'></script>
     <script src='camera.js'></script>
-    <style>
-        canvas {
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-            position: absolute;
-            top: 0px;
-        }
-    </style>
 </head>
 
 <body>
     <canvas id='c1' width='640' height='480' style='opacity:0.3'></canvas>
-    <canvas id='c2' width='640' height='480'></canvas>
+    <h1 id='msg'>0</h1>
     <script>
-        var act, score = 0;
+        var act, cam, score = 0;
         ((async function () {
-            var cam = new Camera(0).setFlip(true).setCanvas(c1);
+            cam = new Camera(0).setFlip(true).setCanvas(c1);
             await cam.start();
-            main();
-        }))();
-
-        async function main() {
             //產生遊戲平台
-            try {
-                var game = new PIXI_Game(c2);
-                //*
-                act = await new PIXI_Actor(game, "aa", 'box.png');
-                act.size(120, 120);
-                act.pos(0, 360);
+            var game = new PIXI_Game(cam.getCanvas());
+            act = await new PIXI_Actor(game, 'box.png');
+            act.size(120, 120);
+            act.pos(0, 360);
+            act.collision(function (obj1, obj2) {
+                act.collision_obj.destroy();
+                msg.innerHTML = ++score;
+            });
+            setInterval(function () {
                 act.moveTo(0, 360, 5);
                 act.moveTo(520, 360, 5);
-                act.collision(function (obj1, obj2) {
-                    console.log("Score:", ++score);
-                    obj2.destroy();
-                });
-                setInterval(function () {
-                    act.moveTo(0, 360, 5);
-                    act.moveTo(520, 360, 5);
-                }, 2000);
-                setInterval(async function () {
-                    var coin = await new PIXI_Actor(game, "coin" + Math.random(), 'res/coin.png');
-                    var x = Math.random() * 640;
-                    var speed = parseInt(Math.random() * 10) + 5;
-                    coin.size(36, 36).pos(x, 0);
-                    coin.moveToDestroy(x, 480, speed);
-                }, 200);
-                //*/
-            } catch (e) {
-                console.log(e);
-            }
-        }
+            }, 2000);
+            setInterval(async function () {
+                var coin = await new PIXI_Actor(game, 'res/coin.png');
+                var x = Math.random() * 640;
+                var speed = parseInt(Math.random() * 10) + 5;
+                coin.size(36, 36).pos(x, 0);
+                coin.moveToDestroy(x, 480, speed);
+            }, 200);
+        }))();
     </script>
 </body>
 

@@ -13,7 +13,11 @@
 */
 
 class PIXI_Game {
-    constructor(canvas) {
+    constructor(camCanvas) {
+        this.startOverlay(camCanvas);
+    }
+
+    init(canvas) {
         this.bound = 4;
         this.actors = {};
         this.app = new PIXI.Application({
@@ -27,6 +31,20 @@ class PIXI_Game {
         );
         this.loader = PIXI.loader;
         this.app.ticker.add(delta => this.gameLoop(delta));
+    }
+
+    startOverlay(camCanvas) {
+        var canvas = document.createElement('canvas');
+        canvas.id = "PIXI_Layer";
+        canvas.width = camCanvas.width;
+        canvas.height = camCanvas.height;
+        canvas.style.position = "absolute";
+        canvas.style.display = 'block';
+        canvas.style.top = camCanvas.offsetTop;
+        canvas.style.left = camCanvas.offsetLeft;
+        var body = document.getElementsByTagName("body")[0];
+        body.appendChild(canvas);
+        this.init(canvas);
     }
 
     join(actor) {
@@ -50,8 +68,10 @@ class PIXI_Game {
                     }
                     if (this.hitTestRectangle(actor.sprite, actor2.sprite)) {
                         actor.isCollision = true;
-                        actor2.isCollision = true;
+                        actor.collision_obj = actor2;
                         actor.cbCollision(actor, actor2);
+                        actor2.isCollision = true;
+                        actor2.collision_obj = actor;
                         actor2.cbCollision(actor2, actor);
                     }
                 }
@@ -309,17 +329,21 @@ class PIXI_Monster {
 */
 
 class PIXI_Actor {
-    constructor(game, name, url) {
+    constructor(game, url) {
         var self = this;
+        if (typeof PIXI_Actor.idx == 'undefined') {
+            PIXI_Actor.idx = 0;
+        }
         return new Promise(async (resolve, reject) => {
             try {
                 PIXI_Actor.texture = null;
+                self.collision_obj = null;
                 self.game = game;
-                self.name = name;
+                self.name = "name_" + PIXI_Actor.idx++;
                 self.imgURL = url;
                 self.actMoveTo = [];
                 self.destroyed = false;
-                self.destoryWhenMoveDone = false;
+                self.destroyWhenMoveDone = false;
                 self.cbCollision = function (actor) { };
                 self.callback = function (sprite) { };
                 self.cbMoveTo = function (move) { };
@@ -401,7 +425,8 @@ class PIXI_Actor {
         return this;
     }
 
-    moveTo(desX, desY, speed, cb) {
+    moveTo(desX, desY, speed, cb, destroyWhenMoveDone) {
+        this.destroyWhenMoveDone = destroyWhenMoveDone;
         if (this.destroyed) return this;
         this.actMoveTo.push([desX, desY, speed]);
         if (typeof cb == 'function') {
@@ -415,7 +440,7 @@ class PIXI_Actor {
         if (typeof cb == 'function') {
             this.cbMoveTo = cb;
         }
-        this.destoryWhenMoveDone = true;
+        this.destroyWhenMoveDone = true;
     }
 
     rotate(rotate, anchorX, anchorY) {
@@ -473,7 +498,7 @@ class PIXI_Actor {
         if (parseInt(desX) == parseInt(this.x) && parseInt(desY) == parseInt(this.y)) {
             var m = this.actMoveTo.shift();
             this.cbMoveTo(m);
-            if (this.actMoveTo.length == 0 && this.destoryWhenMoveDone) {
+            if (this.actMoveTo.length == 0 && this.destroyWhenMoveDone) {
                 this.destroy();
             }
         }

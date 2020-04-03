@@ -1,136 +1,130 @@
 <category id="catVideoSensor">
   <block type="waspot_get_camera">
   </block>
-  <block type='waspot_create_actor'>
+  <block type="pixi_game">
+  </block>
+
+
+  <block type="pixi_actor">
+    <field name="stage">stage</field>
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
     <value name="imgURL">
-      <shadow type="text">
-        <field name="TEXT">https://webduino.io/img/training/training4.png</field>
-      </shadow>
-    </value>
-    <value name="width">
-      <shadow type="math_number">
-        <field name="NUM">64</field>
-      </shadow>
-    </value>
-    <value name="height">
-      <shadow type="math_number">
-        <field name="NUM">64</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_set_snd_url_actor'>
-    <value name="sndURL">
-      <shadow type="text">
-        <field name="TEXT">http://webduino.tw/res/coin.mp3</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_move_actor'>
-    <value name="x">
-      <shadow type="math_number">
-        <field name="NUM">10</field>
-      </shadow>
-    </value>
-    <value name="y">
-      <shadow type="math_number">
-        <field name="NUM">10</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_move_between_actor'>
-    <value name="x1">
-      <shadow type="math_number">
-        <field name="NUM">10</field>
-      </shadow>
-    </value>
-    <value name="y1">
-      <shadow type="math_number">
-        <field name="NUM">10</field>
-      </shadow>
-    </value>
-    <value name="x2">
-      <shadow type="math_number">
-        <field name="NUM">100</field>
-      </shadow>
-    </value>
-    <value name="y2">
-      <shadow type="math_number">
-        <field name="NUM">100</field>
-      </shadow>
-    </value>
-    <value name="sec">
-      <shadow type="math_number">
-        <field name="NUM">0.1</field>
-      </shadow>
-    </value>
-    <value name="pixel">
-      <shadow type="math_number">
-        <field name="NUM">5</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_touch_actor'>
-  </block>
-  <block type='waspot_collision_actor'>
-  </block>
-  <block type='waspot_by_collision_actor'>
-  </block>
-  <block type='waspot_show_actor'>
-  </block>
-  <block type='waspot_loadimg_actor'>
-    <value name="imgURL">
-      <shadow type="text">
-        <field name="TEXT">https://webduino.io/img/training/training4.png</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_reloadimg_actor'>
-    <value name="imgURL">
-      <shadow type="text">
-        <field name="TEXT">https://webduino.io/img/training/training4.png</field>
-      </shadow>
-    </value>
-    <value name="after">
-      <shadow type="math_number">
-        <field name="NUM">0.5</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_delete_actor'>
-    <value name="imgURL">
-      <shadow type="text">
-        <field name="TEXT">https://webduino.io/img/training/training4.png</field>
-      </shadow>
-    </value>
-    <value name="after">
-      <shadow type="math_number">
-        <field name="NUM">0.5</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_set_image_size'>
-    <value name="width">
-      <shadow type="math_number">
-        <field name="NUM">10</field>
-      </shadow>
-    </value>
-    <value name="height">
-      <shadow type="math_number">
-        <field name="NUM">10</field>
-      </shadow>
-    </value>
-  </block>
-  <block type='waspot_play_audio_actor'>
-  </block>
-  <block type="waspot_ctrl_video">
-    <value name="videoId">
       <block type="text">
-        <field name="TEXT">http://webduino.tw/walkman.mp4</field>
+        <field name="TEXT"></field>
       </block>
     </value>
   </block>
-  <block type="waspot_setting_video">
+
+
+  <block type="pixi_actor_size">
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
+    <value name="width">
+      <block type="math_number">
+        <field name="NUM">32</field>
+      </block>
+    </value>
+    <value name="height">
+      <block type="math_number">
+        <field name="NUM">32</field>
+      </block>
+    </value>
   </block>
-  <block type="waspot_ctrl_video_action">
+
+  <block type="pixi_actor_pos">
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
+    <value name="x">
+      <block type="math_number">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+    <value name="y">
+      <block type="math_number">
+        <field name="NUM">0</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="pixi_actor_move">
+    <field name="destroy">FALSE</field>
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
+    <value name="x">
+      <block type="math_number">
+        <field name="NUM">100</field>
+      </block>
+    </value>
+    <value name="y">
+      <block type="math_number">
+        <field name="NUM">100</field>
+      </block>
+    </value>
+    <value name="speed">
+      <block type="math_number">
+        <field name="NUM">3</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="pixi_actor_move_cb">
+    <field name="destroy">FALSE</field>
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
+    <value name="x">
+      <block type="math_number">
+        <field name="NUM">100</field>
+      </block>
+    </value>
+    <value name="y">
+      <block type="math_number">
+        <field name="NUM">100</field>
+      </block>
+    </value>
+    <value name="speed">
+      <block type="math_number">
+        <field name="NUM">3</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="pixi_actor_collision">
+    <value name="collision">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="pixi_actor_collision_obj">
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="pixi_actor_destroy">
+    <value name="actor">
+      <block type="variables_get">
+        <field name="VAR">actor</field>
+      </block>
+    </value>
   </block>
 </category>

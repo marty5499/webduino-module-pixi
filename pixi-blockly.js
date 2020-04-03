@@ -39,33 +39,8 @@
     await cam.start();
     c1.style.position = 'absolute';
     c1.style.top = '0';
-    createPIXI(480, 360, true, true);
     return cam;
   }
-
-  window.createPIXI = async function (width, height, flip, opacity) {
-    var c2 = document.createElement('canvas');
-    c2.width = width;
-    c2.height = height;
-    c2.style.position = 'absolute';
-    c2.style.top = '0';
-    document.body.appendChild(c2);
-
-    var game = await new PIXI_Game(async function () {
-      return new Promise((resolve, reject) => {
-        console.log("123123");
-        resolve("ready2go");
-      });
-    }, [
-      { "name": "a1", "url": "media/demo-edu-a1.png" },
-      { "name": "a2", "url": "media/demo-edu-a2.png" },
-      { "name": "a3", "url": "media/demo-edu-a3.png" },
-      { "name": "a4", "url": "media/demo-edu-a4.png" }
-    ], c2);
-    console.log("OKOKOK");
-  }
-
-
 
 }(window, window.webduino));
 

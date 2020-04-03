@@ -1,144 +1,3 @@
-Blockly.JavaScript['waspot_ctrl_video'] = function (block) {
-  var variable_video = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('video'), Blockly.Variables.NAME_TYPE);
-  var id = Blockly.JavaScript.valueToCode(block, 'videoId', Blockly.JavaScript.ORDER_ATOMIC);
-  var url = block.getFieldValue('videoURL');
-  var w = block.getFieldValue('width');
-  var h = block.getFieldValue('height');
-  var code = variable_video + '= createOrGetVideoEle(' + id + ',"' + url + '",' + w + ',' + h + ');\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_ctrl_video_action'] = function (block) {
-  var variable_video = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('video'), Blockly.Variables.NAME_TYPE);
-  var dropdown_action = block.getFieldValue('action');
-  var code = variable_video + '.' + dropdown_action + ';\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_setting_video'] = function (block) {
-  var variable_video = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('video'), Blockly.Variables.NAME_TYPE);
-  var x = block.getFieldValue('x');
-  var y = block.getFieldValue('y');
-  var z = block.getFieldValue('zIndex');
-  var w = block.getFieldValue('width');
-  var code = variable_video + '.style="position:absolute;top:' + y + 'px;left:' + x + 'px;z-index:' + z + ';width:' + w + 'px";\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_show_actor'] = function (block) {
-  var dropdown_visible = block.getFieldValue('visible');
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var code = variable_actor + '.' + dropdown_visible + '();\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_play_audio_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var code = variable_actor + '.play();\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_touch_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var statements_inside = Blockly.JavaScript.statementToCode(block, 'inside');
-  var code = variable_actor + '.onTouch(\n';
-  code += 'function(pos){\n';
-  code += statements_inside;
-  code += '\n});\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_collision_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var statements_inside = Blockly.JavaScript.statementToCode(block, 'inside');
-  var code = variable_actor + '.onCollision(\n';
-  code += 'function(){\n';
-  code += statements_inside;
-  code += '\n});\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_by_collision_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var code = variable_actor + '.collisionObj';
-  return [code, Blockly.JavaScript.ORDER_NONE];
-}
-
-Blockly.JavaScript['waspot_reloadimg_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var value_imgurl = Blockly.JavaScript.valueToCode(block, 'imgURL', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_after = Blockly.JavaScript.valueToCode(block, 'after', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_actor + '.switchImg(' + value_imgurl + ',' + value_after + ');\n';
-  return code;
-};
-
-
-Blockly.JavaScript['waspot_delete_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var value_imgurl = Blockly.JavaScript.valueToCode(block, 'imgURL', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_after = Blockly.JavaScript.valueToCode(block, 'after', Blockly.JavaScript.ORDER_ATOMIC);
-  //var code = variable_actor + '.delete.call(this,' + value_imgurl + ',' + value_after + ');\n';
-  var code = variable_actor + '.delete(' + value_imgurl + ',' + value_after + ');\n';
-  return code;
-};
-
-
-Blockly.JavaScript['waspot_loadimg_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var value_imgurl = Blockly.JavaScript.valueToCode(block, 'imgURL', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_actor + '.setImg(' + value_imgurl + ');\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_move_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var value_x = Blockly.JavaScript.valueToCode(block, 'x', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_y = Blockly.JavaScript.valueToCode(block, 'y', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_actor + '.moveTo(' + value_x + ',' + value_y + ');\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_move_between_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var value_x1 = Blockly.JavaScript.valueToCode(block, 'x1', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_y1 = Blockly.JavaScript.valueToCode(block, 'y1', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_x2 = Blockly.JavaScript.valueToCode(block, 'x2', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_y2 = Blockly.JavaScript.valueToCode(block, 'y2', Blockly.JavaScript.ORDER_ATOMIC);
-  var value_sec = Blockly.JavaScript.valueToCode(block, 'sec', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_actor + '.moveBetween(' + value_x1 + ',' + value_y1 + ',' + value_x2 + ',' + value_y2 + ',' + value_sec + ');\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_set_snd_url_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var value_sndurl = Blockly.JavaScript.valueToCode(block, 'sndURL', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_actor + '.setSndURL(' + value_sndurl + ');\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_set_image_size'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var w = Blockly.JavaScript.valueToCode(block, 'width', Blockly.JavaScript.ORDER_ATOMIC);
-  var h = Blockly.JavaScript.valueToCode(block, 'height', Blockly.JavaScript.ORDER_ATOMIC);
-  var code = variable_actor + '.setImgSize(' + w + ',' + h + ');\n';
-  return code;
-};
-
-Blockly.JavaScript['waspot_create_actor'] = function (block) {
-  var variable_actor = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('actor'), Blockly.Variables.NAME_TYPE);
-  var variable_camera = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('camera'), Blockly.Variables.NAME_TYPE);
-  var text_imgURL = Blockly.JavaScript.valueToCode(block, 'imgURL', Blockly.JavaScript.ORDER_ATOMIC);
-  var text_width = Blockly.JavaScript.valueToCode(block, 'width', Blockly.JavaScript.ORDER_ATOMIC);
-  var text_height = Blockly.JavaScript.valueToCode(block, 'height', Blockly.JavaScript.ORDER_ATOMIC);
-  var text_sndURL = block.getFieldValue('sndURL');
-  var code = variable_actor + ' = new Actor(cv,{\n';
-  code += '"stage":' + variable_camera + ',\n';
-  code += '"img":' + text_imgURL + ',\n';
-  code += '"pos":[ -1000, -1000,' + text_width + ',' + text_height + ']\n});\n';
-  code += variable_actor + '.start();\n';
-  return code;
-};
-
 Blockly.JavaScript['waspot_get_camera'] = function (block) {
   var variable_camera = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('camera'), Blockly.Variables.NAME_TYPE);
   var checkbox_rotate = block.getFieldValue('rotate') == 'TRUE' ? 90 : 0;
@@ -147,5 +6,84 @@ Blockly.JavaScript['waspot_get_camera'] = function (block) {
   var opacity = block.getFieldValue('opacity');
   var text_src = block.getFieldValue('src');
   var code = variable_camera + ' = await createCamera("' + text_src + '",' + screenSize + ',' + checkbox_rotate + ',' + checkbox_flip + ',' + opacity + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['pixi_game'] = function (block) {
+  var var_stage = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('stage'), Blockly.Variables.NAME_TYPE);
+  var var_camera = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('camera'), Blockly.Variables.NAME_TYPE);
+  //var game = new PIXI_Game(cam.getCanvas());
+  var code = var_stage + ' = new PIXI_Game(' + var_camera + '.getCanvas());\n';
+  return code;
+};
+
+Blockly.JavaScript['pixi_actor'] = function (block) {
+  var value_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_imgurl = Blockly.JavaScript.valueToCode(block, 'imgURL', Blockly.JavaScript.ORDER_ATOMIC);
+  var variable_stage = Blockly.JavaScript.variableDB_.getName(block.getFieldValue('stage'), Blockly.Variables.NAME_TYPE);
+  var code = value_actor + ' = await new PIXI_Actor(' + variable_stage + ', ' + value_imgurl + ')\n';
+  return code;
+};
+
+
+Blockly.JavaScript['pixi_actor_size'] = function (block) {
+  var var_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_width = Blockly.JavaScript.valueToCode(block, 'width', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_height = Blockly.JavaScript.valueToCode(block, 'height', Blockly.JavaScript.ORDER_ATOMIC);
+  // act.size(120, 120);
+  var code = var_actor + '.size(' + val_width + ', ' + val_height + ');\n';
+  return code;
+};
+
+
+Blockly.JavaScript['pixi_actor_pos'] = function (block) {
+  var val_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_x = Blockly.JavaScript.valueToCode(block, 'x', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_y = Blockly.JavaScript.valueToCode(block, 'y', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = val_actor + '.pos(' + val_x + ', ' + val_y + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['pixi_actor_move'] = function (block) {
+  var val_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_x = Blockly.JavaScript.valueToCode(block, 'x', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_y = Blockly.JavaScript.valueToCode(block, 'y', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_speed = Blockly.JavaScript.valueToCode(block, 'speed', Blockly.JavaScript.ORDER_ATOMIC);
+  var chk_destroy = block.getFieldValue('destroy') == 'TRUE';
+  var code = val_actor + '.moveTo(' + val_x + ', ' + val_y + ', ' + val_speed + ', function(){}, ' + chk_destroy + ');\n';
+  return code;
+};
+
+Blockly.JavaScript['pixi_actor_move_cb'] = function (block) {
+  var val_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_x = Blockly.JavaScript.valueToCode(block, 'x', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_y = Blockly.JavaScript.valueToCode(block, 'y', Blockly.JavaScript.ORDER_ATOMIC);
+  var val_speed = Blockly.JavaScript.valueToCode(block, 'speed', Blockly.JavaScript.ORDER_ATOMIC);
+  var chk_destroy = block.getFieldValue('destroy') == 'TRUE';
+  var statements_name = Blockly.JavaScript.statementToCode(block, 'moveDone');
+  var code = val_actor + '.moveTo(' + val_x + ', ' + val_y + ', ' + val_speed + ',function(){\n';
+  code += statements_name;
+  code += '},' + chk_destroy + ');';
+  return code;
+};
+
+Blockly.JavaScript['pixi_actor_collision'] = function(block) {
+  var value_collision = Blockly.JavaScript.valueToCode(block, 'collision', Blockly.JavaScript.ORDER_ATOMIC);
+  var statements_run = Blockly.JavaScript.statementToCode(block, 'run');
+  var code = value_collision + '.collision( function(self,other){ \n';
+  code += statements_run;
+  code += '});\n';
+  return code;
+};
+
+Blockly.JavaScript['pixi_actor_collision_obj'] = function(block) {
+  var value_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = value_actor + '.collision_obj';
+  return [code, Blockly.JavaScript.ORDER_NONE];
+};
+
+Blockly.JavaScript['pixi_actor_destroy'] = function (block) {
+  var val_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = val_actor + '.destroy();\n';
   return code;
 };
