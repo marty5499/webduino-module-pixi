@@ -121,7 +121,7 @@ class PIXI_Monster {
             try {
                 self.game = game;
                 self.name = name;
-                self.imgURL = url + '#' + name;
+                self.imgURL = url;
                 self.imgX = imgX;
                 self.imgY = imgY;
                 self.width = width;
@@ -313,11 +313,13 @@ class PIXI_Actor {
         var self = this;
         return new Promise(async (resolve, reject) => {
             try {
+                PIXI_Actor.texture = null;
                 self.game = game;
                 self.name = name;
-                self.imgURL = url + '#' + name;
+                self.imgURL = url;
                 self.actMoveTo = [];
                 self.destroyed = false;
+                self.destoryWhenMoveDone = false;
                 self.cbCollision = function (actor) { };
                 self.callback = function (sprite) { };
                 self.cbMoveTo = function (move) { };
@@ -338,8 +340,7 @@ class PIXI_Actor {
     async join() {
         var self = this;
         function createSprite() {
-            var texture = PIXI.utils.TextureCache[self.imgURL];
-            texture.frame = new PIXI.Rectangle(0, 0, self.width, self.height);
+            var texture = PIXI_Actor.texture;
             self.sprite = new PIXI.Sprite(texture);
             var sprite = self.sprite;
             sprite.anchor.x = 0;//0.5;
@@ -355,19 +356,11 @@ class PIXI_Actor {
         }
 
         return new Promise((resolve, reject) => {
-            var texture = PIXI.TextureCache[self.imgURL];
-            if (typeof texture == 'undefined') {
-                PIXI.loader.add(self.imgURL).load(function (img) {
-                    var data = img.resources[self.imgURL]['data'];
-                    self.width = data.width;
-                    self.height = data.height;
-                    createSprite();
-                    resolve(self);
-                });
-            } else {
-                createSprite();
-                resolve(self);
+            if (PIXI_Actor.texture == null) {
+                PIXI_Actor.texture = PIXI.Texture.from(self.imgURL);
             }
+            createSprite();
+            resolve(self);
         });
     }
 
@@ -414,6 +407,15 @@ class PIXI_Actor {
         if (typeof cb == 'function') {
             this.cbMoveTo = cb;
         }
+    }
+
+    moveToDestroy(desX, desY, speed, cb) {
+        if (this.destroyed) return this;
+        this.actMoveTo.push([desX, desY, speed]);
+        if (typeof cb == 'function') {
+            this.cbMoveTo = cb;
+        }
+        this.destoryWhenMoveDone = true;
     }
 
     rotate(rotate, anchorX, anchorY) {
@@ -467,9 +469,13 @@ class PIXI_Actor {
             this.sprite.x = this.x;
             this.sprite.y = this.y;
         }
-        if (desX == parseInt(this.x) && desY == parseInt(this.y)) {
+        //console.log(parseInt(this.x), parseInt(this.y), '-->', parseInt(desX), parseInt(desY));
+        if (parseInt(desX) == parseInt(this.x) && parseInt(desY) == parseInt(this.y)) {
             var m = this.actMoveTo.shift();
             this.cbMoveTo(m);
+            if (this.actMoveTo.length == 0 && this.destoryWhenMoveDone) {
+                this.destroy();
+            }
         }
     }
 
