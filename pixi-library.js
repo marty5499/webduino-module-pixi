@@ -1,5 +1,20 @@
+// ASCII Font
+
+/*
+
+  _____ _______   _______   _____                      
+ |  __ \_   _\ \ / /_   _| / ____|                     
+ | |__) || |  \ V /  | |  | |  __  __ _ _ __ ___   ___ 
+ |  ___/ | |   > <   | |  | | |_ |/ _` | '_ ` _ \ / _ \
+ | |    _| |_ / . \ _| |_ | |__| | (_| | | | | | |  __/
+ |_|   |_____/_/ \_\_____| \_____|\__,_|_| |_| |_|\___|
+                       ______                          
+                      |______|                         
+*/
+
 class PIXI_Game {
     constructor(canvas) {
+        this.bound = 4;
         this.actors = {};
         this.app = new PIXI.Application({
             width: canvas.width,
@@ -18,6 +33,10 @@ class PIXI_Game {
         this.actors[actor.name] = actor;
     }
 
+    remove(actor) {
+        delete this.actors[actor.name];
+    }
+
     gameLoop(delta) {
         for (var key in this.actors) {
             var actor = this.actors[key];
@@ -26,6 +45,9 @@ class PIXI_Game {
             for (var key2 in this.actors) {
                 var actor2 = this.actors[key2];
                 if (actor.name != actor2.name) {
+                    if (actor.destroyed || actor2.destroyed) {
+                        return;
+                    }
                     if (this.hitTestRectangle(actor.sprite, actor2.sprite)) {
                         actor.isCollision = true;
                         actor2.isCollision = true;
@@ -42,18 +64,18 @@ class PIXI_Game {
         let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
         //hit will determine whether there's a collision
         hit = false;
-
+        var bound = this.bound;
         //Find the center points of each sprite
-        r1.centerX = r1.x + r1.width / 2;
-        r1.centerY = r1.y + r1.height / 2;
-        r2.centerX = r2.x + r2.width / 2;
-        r2.centerY = r2.y + r2.height / 2;
+        r1.centerX = r1.x + r1.width / bound;
+        r1.centerY = r1.y + r1.height / bound;
+        r2.centerX = r2.x + r2.width / bound;
+        r2.centerY = r2.y + r2.height / bound;
 
         //Find the half-widths and half-heights of each sprite
-        r1.halfWidth = r1.width / 2;
-        r1.halfHeight = r1.height / 2;
-        r2.halfWidth = r2.width / 2;
-        r2.halfHeight = r2.height / 2;
+        r1.halfWidth = r1.width / bound;
+        r1.halfHeight = r1.height / bound;
+        r2.halfWidth = r2.width / bound;
+        r2.halfHeight = r2.height / bound;
 
         //Calculate the distance vector between the sprites
         vx = r1.centerX - r2.centerX;
@@ -82,7 +104,16 @@ class PIXI_Game {
     };
 }
 
-
+/*
+  _____ _______   _______   __  __                 _            
+ |  __ \_   _\ \ / /_   _| |  \/  |               | |           
+ | |__) || |  \ V /  | |   | \  / | ___  _ __  ___| |_ ___ _ __ 
+ |  ___/ | |   > <   | |   | |\/| |/ _ \| '_ \/ __| __/ _ \ '__|
+ | |    _| |_ / . \ _| |_  | |  | | (_) | | | \__ \ ||  __/ |   
+ |_|   |_____/_/ \_\_____| |_|  |_|\___/|_| |_|___/\__\___|_|   
+                       ______                                   
+                      |______|                                  
+*/
 class PIXI_Monster {
     constructor(game, name, url, imgX, imgY, width, height) {
         var self = this;
@@ -96,6 +127,7 @@ class PIXI_Monster {
                 self.width = width;
                 self.height = height;
                 self.actMoveTo = [];
+                self.destroyed = false;
                 self.cbCollision = function (actor) { };
                 self.callback = function (sprite) { };
                 await self.join();
@@ -265,4 +297,194 @@ class PIXI_Monster {
 
 }
 
+/*
+  _____ _______   _______                _             
+ |  __ \_   _\ \ / /_   _|     /\       | |            
+ | |__) || |  \ V /  | |      /  \   ___| |_ ___  _ __ 
+ |  ___/ | |   > <   | |     / /\ \ / __| __/ _ \| '__|
+ | |    _| |_ / . \ _| |_   / ____ \ (__| || (_) | |   
+ |_|   |_____/_/ \_\_____| /_/    \_\___|\__\___/|_|   
+                       ______                          
+                      |______|                         
+*/
 
+class PIXI_Actor {
+    constructor(game, name, url) {
+        var self = this;
+        return new Promise(async (resolve, reject) => {
+            try {
+                self.game = game;
+                self.name = name;
+                self.imgURL = url + '#' + name;
+                self.actMoveTo = [];
+                self.destroyed = false;
+                self.cbCollision = function (actor) { };
+                self.callback = function (sprite) { };
+                self.cbMoveTo = function (move) { };
+                await self.join();
+            } catch (ex) {
+                return reject(ex);
+            }
+            resolve(this);
+        });
+    }
+
+    destroy() {
+        this.destroyed = true;
+        this.game.remove(this);
+        this.sprite.destroy();
+    }
+
+    async join() {
+        var self = this;
+        function createSprite() {
+            var texture = PIXI.utils.TextureCache[self.imgURL];
+            texture.frame = new PIXI.Rectangle(0, 0, self.width, self.height);
+            self.sprite = new PIXI.Sprite(texture);
+            var sprite = self.sprite;
+            sprite.anchor.x = 0;//0.5;
+            sprite.anchor.y = 0;//0.5;
+            sprite.rotation = 0;
+            sprite.interactive = true;
+            sprite.cursor = 'normal';
+            sprite.on('click', (event) => {
+                console.log("tap");
+            });
+            self.game.join(self);
+            self.game.app.stage.addChild(self.sprite);
+        }
+
+        return new Promise((resolve, reject) => {
+            var texture = PIXI.TextureCache[self.imgURL];
+            if (typeof texture == 'undefined') {
+                PIXI.loader.add(self.imgURL).load(function (img) {
+                    var data = img.resources[self.imgURL]['data'];
+                    self.width = data.width;
+                    self.height = data.height;
+                    createSprite();
+                    resolve(self);
+                });
+            } else {
+                createSprite();
+                resolve(self);
+            }
+        });
+    }
+
+    show() {
+        if (this.destroyed) return this;
+        this.sprite.visible = true;
+        return this;
+    }
+
+    hide() {
+        if (this.destroyed) return this;
+        this.sprite.visible = false;
+        return this;
+    }
+
+    collision(cb) {
+        if (this.destroyed) return this;
+        this.cbCollision = cb;
+    }
+
+    size(width, height) {
+        if (this.destroyed) return this;
+        this.sprite.width = width;
+        this.sprite.height = height;
+        return this;
+    }
+
+    pos(x, y) {
+        if (this.destroyed) return this;
+        this.x = this.sprite.x = x;
+        this.y = this.sprite.y = y;
+        return this;
+    }
+
+    start(cb) {
+        if (this.destroyed) return this;
+        this.callback = cb;
+        return this;
+    }
+
+    moveTo(desX, desY, speed, cb) {
+        if (this.destroyed) return this;
+        this.actMoveTo.push([desX, desY, speed]);
+        if (typeof cb == 'function') {
+            this.cbMoveTo = cb;
+        }
+    }
+
+    rotate(rotate, anchorX, anchorY) {
+        if (this.destroyed) return this;
+        if (arguments.length == 1) {
+            this.sprite.rotation = rotate;
+            return;
+        }
+        this.sprite.anchor.x = anchorX;
+        this.sprite.anchor.y = anchorY;
+        return this;
+    }
+
+    processMoveTo() {
+        var actInfo = this.actMoveTo[0];
+        var desX = actInfo[0];
+        var desY = actInfo[1];
+        var speed = typeof actInfo[2] == 'undefined' ? 1 : actInfo[2];
+        var stepX = 0;
+        var stepY = 0;
+        if (Math.abs(desX - this.x) < 1) {
+            this.x = desX;
+        }
+        if (Math.abs(desY - this.y) < 1) {
+            this.y = desY;
+        }
+        var xDistance = desX - this.x;
+        var yDistance = desY - this.y;
+        var stepX = xDistance == 0 ? 0 : Math.abs(xDistance / yDistance);
+        var stepY = yDistance == 0 ? 0 : Math.abs(yDistance / xDistance);
+        var xSign = xDistance > 0 ? 1 : -1;
+        var ySign = yDistance > 0 ? 1 : -1;
+        if (stepX > stepY) {
+            var newX = this.x + xSign * speed;
+            var newY = this.y + ySign * stepY * speed;
+        } else {
+            var newX = this.x + xSign * stepX * speed;
+            var newY = this.y + ySign * speed;
+        }
+        if (xSign > 0) {
+            this.x = newX > desX ? desX : newX;
+        } else {
+            this.x = newX < desX ? desX : newX;
+        }
+        if (ySign > 0) {
+            this.y = newY > desY ? desY : newY;
+        } else {
+            this.y = newY < desY ? desY : newY;
+        }
+        if (Math.abs(this.x - this.sprite.x) > 1 || Math.abs(this.y - this.sprite.y) > 1) {
+            this.sprite.x = this.x;
+            this.sprite.y = this.y;
+        }
+        if (desX == parseInt(this.x) && desY == parseInt(this.y)) {
+            var m = this.actMoveTo.shift();
+            this.cbMoveTo(m);
+        }
+    }
+
+    exec() {
+        if (this.destroyed) return this;
+        if (this.actMoveTo.length > 0) {
+            this.processMoveTo();
+        }
+        this.callback(this.sprite);
+        return this;
+    }
+
+    run(cb) {
+        this.callback = cb;
+        return this;
+    }
+
+}

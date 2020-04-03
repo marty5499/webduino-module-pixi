@@ -25,27 +25,34 @@
             await cam.start();
             main();
         }))();
-        var act, act2;
+        var acts = [];
         async function main() {
             //產生遊戲平台
             var game1 = new PIXI_Game(c2);
             //name, game, key, width, height
-            for (var i = 0; i < 15; i++) {
-                var name = 'actor_' + i;
+            for (var i = 0; i < 150; i++) {
+                console.log(i);
                 var idx = parseInt(Math.random() * 4) + 1;
                 var img = 'res/a' + idx + '.png';
+                var name = 'aa' + i;
                 act = await new PIXI_Monster(game1, name, img, 0, 0, 200, 200);
-                act.size(50, 50).pos(50 + (50 * i), 50);
-                act.type(idx - 1);
-                move(act);
+                act.size(50, 50).pos(50 + 50 * i, 50);
+                acts.push(act);
+            }
+
+            for (var i = 0; i < acts.length; i++) {
+                var idx = parseInt(Math.random() * 4) + 1;
+                acts[i].type(idx);
+                move(acts[i]);
             }
         }
 
         function move(act) {
+            var speed = Math.random() * 20 + 1;
             for (var i = 0; i < 20; i++) {
                 var x = parseInt(Math.random() * 640);
                 var y = parseInt(Math.random() * 480);
-                act.moveTo(x, y, Math.random() * 10 + 10);
+                act.moveTo(x, y, speed);
             }
             //act.moveTo(0, 0);
             //此角色的執行緒
@@ -53,9 +60,6 @@
 
             });
         }
-
-
-
     </script>
 </body>
 
