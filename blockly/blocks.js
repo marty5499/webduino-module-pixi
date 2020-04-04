@@ -216,3 +216,51 @@ Blockly.Blocks['pixi_actor_destroy'] = {
     this.setHelpUrl('http://www.example.com/');
   }
 };
+
+//https://blockly-demo.appspot.com/static/demos/blockfactory_old/index.html#5anxuy
+Blockly.Blocks['pixi_pipe_create'] = {
+  init: function() {
+    this.appendValueInput("pipe")
+        .setCheck(null)
+        .appendField("建立管線");
+    this.appendDummyInput()
+        .appendField("設定顏色")
+        .appendField(new Blockly.FieldColour("#ffcc33"), "color");
+    this.appendValueInput("data")
+        .setCheck(null)
+        .appendField("設定資料");
+    this.appendValueInput("stage")
+        .setCheck(null)
+        .appendField("，放入遊戲舞台");
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(330);
+    this.setTooltip('');
+    this.setHelpUrl('http://www.example.com/');
+  }
+};
+
+//https://blockly-demo.appspot.com/static/demos/blockfactory_old/index.html#gvzkci
+Blockly.Blocks['pixi_pipe_outofbound'] = {
+  init: function() {
+    this.appendValueInput("pipe")
+        .setCheck(null)
+        .appendField("檢查管線");
+    this.appendValueInput("x")
+        .setCheck(null)
+        .appendField("是否超出邊界，傳入座標")
+        .appendField("X");
+    this.appendValueInput("y")
+        .setCheck(null)
+        .appendField("Y");
+    this.appendValueInput("r")
+        .setCheck(null)
+        .appendField("r");
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(330);
+    this.setTooltip('');
+    this.setHelpUrl('http://www.example.com/');
+  }
+};

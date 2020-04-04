@@ -67,7 +67,7 @@ Blockly.JavaScript['pixi_actor_move_cb'] = function (block) {
   return code;
 };
 
-Blockly.JavaScript['pixi_actor_collision'] = function(block) {
+Blockly.JavaScript['pixi_actor_collision'] = function (block) {
   var value_collision = Blockly.JavaScript.valueToCode(block, 'collision', Blockly.JavaScript.ORDER_ATOMIC);
   var statements_run = Blockly.JavaScript.statementToCode(block, 'run');
   var code = value_collision + '.collision( function(self,other){ \n';
@@ -76,7 +76,7 @@ Blockly.JavaScript['pixi_actor_collision'] = function(block) {
   return code;
 };
 
-Blockly.JavaScript['pixi_actor_collision_obj'] = function(block) {
+Blockly.JavaScript['pixi_actor_collision_obj'] = function (block) {
   var value_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
   var code = value_actor + '.collision_obj';
   return [code, Blockly.JavaScript.ORDER_NONE];
@@ -86,4 +86,26 @@ Blockly.JavaScript['pixi_actor_destroy'] = function (block) {
   var val_actor = Blockly.JavaScript.valueToCode(block, 'actor', Blockly.JavaScript.ORDER_ATOMIC);
   var code = val_actor + '.destroy();\n';
   return code;
+};
+
+
+Blockly.JavaScript['pixi_pipe_create'] = function (block) {
+  var value_pipe = Blockly.JavaScript.valueToCode(block, 'pipe', Blockly.JavaScript.ORDER_ATOMIC);
+  var colour_color = block.getFieldValue('color');
+  var value_data = Blockly.JavaScript.valueToCode(block, 'data', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_stage = Blockly.JavaScript.valueToCode(block, 'stage', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = value_pipe + ' = new PIXI_Pipe(' + value_stage + ');\n';
+  code += value_pipe + '.setColor(0x' + colour_color.substring(1) + ');\n';
+  code += value_pipe + '.draw(JSON.parse(' + value_data + '));\n';
+  return code;
+};
+
+
+Blockly.JavaScript['pixi_pipe_outofbound'] = function (block) {
+  var value_pipe = Blockly.JavaScript.valueToCode(block, 'pipe', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_x = Blockly.JavaScript.valueToCode(block, 'x', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_y = Blockly.JavaScript.valueToCode(block, 'y', Blockly.JavaScript.ORDER_ATOMIC);
+  var value_r = Blockly.JavaScript.valueToCode(block, 'r', Blockly.JavaScript.ORDER_ATOMIC);
+  var code = value_pipe + '.outOfBound(' + value_x + ',' + value_y + ',' + value_r + ')\n';
+  return [code, Blockly.JavaScript.ORDER_NONE];
 };

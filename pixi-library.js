@@ -1,15 +1,11 @@
-// ASCII Font
+// ASCII Font http://patorjk.com/software/taag/#p=display&f=Soft&t=PIXI_Game
 
 /*
-
-  _____ _______   _______   _____                      
- |  __ \_   _\ \ / /_   _| / ____|                     
- | |__) || |  \ V /  | |  | |  __  __ _ _ __ ___   ___ 
- |  ___/ | |   > <   | |  | | |_ |/ _` | '_ ` _ \ / _ \
- | |    _| |_ / . \ _| |_ | |__| | (_| | | | | | |  __/
- |_|   |_____/_/ \_\_____| \_____|\__,_|_| |_| |_|\___|
-                       ______                          
-                      |______|                         
+,------. ,--.,--.   ,--.,--.       ,----.                             
+|  .--. '|  | \  `.'  / |  |      '  .-./    ,--,--.,--,--,--. ,---.  
+|  '--' ||  |  .'    \  |  |      |  | .---.' ,-.  ||        || .-. : 
+|  | --' |  | /  .'.  \ |  |,----.'  '--'  |\ '-'  ||  |  |  |\   --. 
+`--'     `--''--'   '--'`--''----' `------'  `--`--'`--`--`--' `----'                       
 */
 
 class PIXI_Game {
@@ -518,4 +514,49 @@ class PIXI_Actor {
         return this;
     }
 
+}
+
+/*
+                                                              
+,------. ,--.,--.   ,--.,--.      ,------. ,--.               
+|  .--. '|  | \  `.'  / |  |      |  .--. '`--' ,---.  ,---.  
+|  '--' ||  |  .'    \  |  |      |  '--' |,--.| .-. || .-. : 
+|  | --' |  | /  .'.  \ |  |,----.|  | --' |  || '-' '\   --. 
+`--'     `--''--'   '--'`--''----'`--'     `--'|  |-'  `----' 
+                                               `--'           
+*/
+class PIXI_Pipe {
+    constructor(gameObj) {
+        this.g = new PIXI.Graphics();
+        this.stage = gameObj.app.stage;
+        this.stage.addChild(this.g);
+    }
+    setColor(color) {
+        this.color = color;
+        this.g.beginFill(this.color);
+    }
+    setStroke(radius) {
+        this.stroke = radius;
+    }
+
+    draw(dotData) {
+        this.dotData = dotData;
+        for (var i = 0; i < dotData.length; i = i + 3) {
+            var x = dotData[i];
+            var y = dotData[i + 1];
+            var r = dotData[i + 2];
+            this.g.drawCircle(x, y, r);
+        }
+    }
+    outOfBound(x, y, r) {
+        for (var i = 0; i < this.dotData.length; i = i + 3) {
+            var dx = this.dotData[i] - x;
+            var dy = this.dotData[i + 1] - y;
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < this.dotData[i + 2] / r) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

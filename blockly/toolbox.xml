@@ -4,7 +4,6 @@
   <block type="pixi_game">
   </block>
 
-
   <block type="pixi_actor">
     <field name="stage">stage</field>
     <value name="actor">
@@ -124,6 +123,49 @@
     <value name="actor">
       <block type="variables_get">
         <field name="VAR">actor</field>
+      </block>
+    </value>
+  </block>
+
+  <block type="pixi_pipe_outofbound">
+    <value name="pipe">
+      <block type="variables_get">
+        <field name="VAR">pipe</field>
+      </block>
+    </value>
+    <value name="x">
+      <block type="math_number">
+        <field name="NUM">100</field>
+      </block>
+    </value>
+    <value name="y">
+      <block type="math_number">
+        <field name="NUM">100</field>
+      </block>
+    </value>
+    <value name="r">
+      <block type="math_number">
+        <field name="NUM">15</field>
+      </block>
+    </value>
+  </block>
+
+
+  <block type="pixi_pipe_create">
+    <field name="color">#ffcc33</field>
+    <value name="pipe">
+      <block type="variables_get">
+        <field name="VAR">pipe</field>
+      </block>
+    </value>
+    <value name="data">
+      <block type="text">
+        <field name="TEXT"></field>
+      </block>
+    </value>
+    <value name="stage">
+      <block type="variables_get">
+        <field name="VAR">stage</field>
       </block>
     </value>
   </block>
