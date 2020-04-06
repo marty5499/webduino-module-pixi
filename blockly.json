@@ -21,7 +21,7 @@
     "imageFilter.js",
     "actor.js",
     "HotSpot.js",
-    "pixi.min.js",
+    "pixi5.min.js",
     "pixi-library.js",
     "pixi-blockly.js"
   ],
