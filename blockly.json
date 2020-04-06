@@ -8,7 +8,7 @@
     "waspot_touch_actor",
     "waspot_get_canvas"
   ],
-  "category": "catPlus",
+  "category": "catEduExtension",
   "scripts": [
     "blockly/blocks.js",
     "blockly/javascript.js"
