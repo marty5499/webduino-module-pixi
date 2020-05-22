@@ -34,6 +34,7 @@ var Camera = (function () {
 
     setAutoScale(autoScale) {
       this.autoScale = autoScale;
+      return this;
     }
 
     getCanvas() {
@@ -104,12 +105,14 @@ var Camera = (function () {
     enumerateDevices(cb) {
       var self = this;
       return new Promise(function (resolve, reject) {
-        navigator.mediaDevices.enumerateDevices()
-          .then(function (o) {
-            self.gotDevices(self, o);
-            if (cb) cb();
-            resolve();
-          }).catch(self.handleError);
+        navigator.mediaDevices.getUserMedia({ video: true }).then(function (mediaStream) {
+          navigator.mediaDevices.enumerateDevices()
+            .then(function (o) {
+              self.gotDevices(self, o);
+              if (cb) cb();
+              resolve();
+            }).catch(self.handleError);
+        });
       });
     }
 
@@ -145,15 +148,15 @@ var Camera = (function () {
           };
           var self = this;
           navigator.mediaDevices.getUserMedia(constraints).
-          then(function (stream) {
-            if (self.video) {
-              self.video.srcObject = stream;
-            }
-          }).catch(function (error) {
-            console.log('Error: ', error);
-          });
+            then(function (stream) {
+              if (self.video) {
+                self.video.srcObject = stream;
+              }
+            }).catch(function (error) {
+              console.log('Error: ', error);
+            });
           break;
-          /* WebRTC */
+        /* WebRTC */
         case wsCam:
           console.log("WebRTC:", this.camType);
           ConnectWebSocket(this.URL);
@@ -181,33 +184,56 @@ var Camera = (function () {
         eleOrId : document.getElementById(eleOrId);
     }
 
-    onImage(imageId_or_ele, callback) {
-      var self = this;
-      var image = this.getEle(imageId_or_ele);
-      image.setAttribute("crossOrigin", 'Anonymous');
+    getDelayTime() {
       var camSnapshotDelay = 0.5;
       var param = this.URL.indexOf("?");
       if (param > 0) {
         camSnapshotDelay = parseFloat(this.URL.substring(param + 1));
         this.URL = this.URL.substring(0, param);
       }
-      camSnapshotDelay = camSnapshotDelay * 1000;
-      image.src = self.URL;
-      image.addEventListener('error', function () {
-        self.getImageFailure = true;
-        console.log('loading img failed.'); // you could try to load that resource again.
-        image.src = self.URL + "?" + Math.random();
-      });
+      return camSnapshotDelay * 1000;
+    }
 
-      image.onload = function () {
-        self.getImageFailure = false;
-        setTimeout(function () {
-          if (self.onCanvasCallbackList.length > 0) {
-            callback(image);
+    addImageProcess(img, src) {
+      return new Promise((resolve, reject) => {
+        img.setAttribute("crossOrigin", 'Anonymous');
+        img.onload = () => resolve(img);
+        img.onerror = function () {
+          console.log("camera.js: Error occurred while loading image,retry...");
+          img.src = src + "?" + Math.random();
+        }
+        try {
+          img.src = src + "?" + Math.random();
+        } catch (e) {
+          console.log("camera.js: img.src err:", e)
+        }
+      })
+    }
+
+    async loop(img, camSnapshotDelay, callback) {
+      var self = this;
+      setTimeout(async function () {
+        if (self.onCanvasCallbackList.length > 0) {
+          try {
+            img = await self.addImageProcess(img, self.URL);
+            callback(img);
+            img.onload = null;
+            img.onerror = null;
+            var clone = img.cloneNode(true);
+            img.parentNode.replaceChild(clone, img);
+            img = clone;
+            self.loop(img, camSnapshotDelay, callback);
+          } catch (e) {
+            console.log(e);
           }
-          image.src = self.URL + "?" + Math.random();
-        }, camSnapshotDelay);
-      }
+        }
+      }, camSnapshotDelay);
+    }
+
+    async onImage(imageId_or_ele, callback) {
+      var img = this.getEle(imageId_or_ele);
+      var camSnapshotDelay = this.getDelayTime();
+      this.loop(img, camSnapshotDelay, callback);
     }
 
     onCanvas(eleOrId, callback) {
@@ -219,7 +245,7 @@ var Camera = (function () {
         eleOrId = this.getCanvas();
       }
       if (typeof callback == 'undefined') {
-        callback = function () {};
+        callback = function () { };
       }
       this.onCanvasCallbackList.push(callback);
       var canvas = self.getEle(eleOrId);
@@ -240,20 +266,12 @@ var Camera = (function () {
               var nowTime = Date.now();
               var lastTime = nowTime;
               var loop = function () {
-                /*
-                if (nowTime - lastTime < 33) {
-                  nowTime = Date.now();
-                  requestAnimationFrame(loop);
-                  return;
-                }
-                //*/
                 lastTime = nowTime;
-                if (self.cnt++ == 30 /* skip 30 frame*/ ) {
+                if (self.cnt++ == 30 /* skip 30 frame*/) {
                   for (var i = 0; i < self.onReadyCallbackList.length; i++) {
                     self.onReadyCallbackList[i]();
                   }
                 }
-                var ctx = canvas.getContext('2d');
                 self.rotateImg(video, canvas, self.rotate, true);
                 if (self.onCanvasCallbackList.length > 0) {
                   for (var i = 0; i < self.onCanvasCallbackList.length; i++) {
@@ -268,10 +286,13 @@ var Camera = (function () {
             break;
           case jpgCam:
             var ele = document.createElement('img');
+            ele.setAttribute("style", "display:none");
+            var body = document.getElementsByTagName("body")[0];
+            body.append(ele);
             self.onImage(ele, function (img) {
-              self.rotateImg(ele, canvas, self.rotate, false);
+              self.rotateImg(img, canvas, self.rotate, false);
               for (var i = 0; i < self.onCanvasCallbackList.length; i++) {
-                self.onCanvasCallbackList[i](self.canvas, video);
+                self.onCanvasCallbackList[i](canvas, video);
               }
             });
             for (var i = 0; i < self.onReadyCallbackList.length; i++) {
@@ -284,7 +305,6 @@ var Camera = (function () {
             ele.setAttribute("crossOrigin", 'Anonymous');
             ele.style.display = 'none';
             document.getElementsByTagName("body")[0].append(ele);
-            var ctx = canvas.getContext('2d');
             var loop = function () {
               self.rotateImg(ele, canvas, self.rotate, false);
               if (self.onCanvasCallbackList.length > 0) {
@@ -313,11 +333,10 @@ var Camera = (function () {
                 for (var i = 0; i < self.onReadyCallbackList.length; i++) {
                   self.onReadyCallbackList[i]();
                 }
-                var ctx = canvas.getContext('2d');
                 self.rotateImg(video, canvas, self.rotate, true);
                 if (self.onCanvasCallbackList.length > 0) {
                   for (var i = 0; i < self.onCanvasCallbackList.length; i++) {
-                    self.onCanvasCallbackList[i](self.canvas, video);
+                    self.onCanvasCallbackList[i](canvas, video);
                   }
                 }
                 requestAnimationFrame(loop);
@@ -438,7 +457,10 @@ var Camera = (function () {
       }
     }
 
-    upload(url) {
+    upload(url, cb) {
+      if (typeof cb == 'undefined')
+        cb = function () { }
+      this.drawTime();
       if (this.getImageFailure) {
         console.log("upload cancel...");
         return;
@@ -452,9 +474,28 @@ var Camera = (function () {
             mode: 'cors',
             body: fd
           }).then(res => {
-            console.log("upload res:", res.status);
+            cb(res.status);
+            //console.log("upload res:", res.status);
           });
         }, 'image/jpeg');
+    }
+
+    drawTime() {
+      var ctx = this.canvas.getContext('2d');
+      ctx.font = "16px Verdana";
+      ctx.fillStyle = '#ecdc00';
+      var x = ctx.canvas.width - 200;
+      var y = ctx.canvas.height - 4;
+      var date = this.getDate();
+      ctx.fillText(date, x, y);
+      return date;
+    }
+
+    getDate() {
+      var d = new Date();
+      var dy = d.toLocaleDateString();
+      var dt = d.toLocaleTimeString();
+      return dy + ' ' + dt;
     }
   }
   return Camera;
